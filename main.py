@@ -1,6 +1,7 @@
 import time
 from datetime import datetime
 import threading
+import os
 from flask import Flask
 from config import *
 from delta_api import fetch_candles
