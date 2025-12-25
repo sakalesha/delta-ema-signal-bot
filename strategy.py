@@ -60,3 +60,30 @@ def check_liquidity_sweep_signal(c1, c2, ema_c1, ema_c2, recent_lows, recent_hig
                         return "SELL"
 
     return None
+
+def check_ema_crossover(c1, c2, ema_c1, ema_c2):
+    """
+    Checks for Price crossing EMA 5 (Setup Condition 1).
+    
+    Args:
+        c1: Previous candle
+        c2: Current confirmed candle
+        ema_c1: EMA at C1
+        ema_c2: EMA at C2
+    
+    Returns:
+        "BULLISH_CROSS" (Price Goes Above EMA)
+        "BEARISH_CROSS" (Price Goes Below EMA)
+        None
+    """
+    # Price Goes Below EMA 5 (Bearish Pressure / Early Buyer Trap)
+    # C1 Close > EMA (or Open > EMA) -> C2 Close < EMA
+    # We check if C2 closed below EMA while C1 was above (or just cross logic)
+    if c1["close"] >= ema_c1 and c2["close"] < ema_c2:
+        return "BEARISH_CROSS"
+    
+    # Price Goes Above EMA 5 (Bullish Pressure / Early Seller Trap)
+    if c1["close"] <= ema_c1 and c2["close"] > ema_c2:
+        return "BULLISH_CROSS"
+        
+    return None
