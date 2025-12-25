@@ -6,7 +6,7 @@ from flask import Flask
 from config import *
 from delta_api import fetch_candles
 from indicators import ema
-from strategy import check_liquidity_sweep_signal, check_ema_crossover
+from strategy import check_liquidity_sweep_signal, check_ema_detach
 from notifier import send_alert
 
 # Flask Web Server for Render
@@ -81,17 +81,18 @@ Time: {c2['time']}
 """
                         send_alert(message)
                         last_signal[key] = True
-                
                 else:
-                    # Check for SETUP (Crossover) Warning
-                    setup_signal = check_ema_crossover(c1, c2, ema_c1, ema_c2)
-                    if setup_signal:
-                        key = f"{symbol}_{c2['time']}_SETUP"
+                    # Check for Detached Candle (No Touch) Alert
+                    detach_signal = check_ema_detach(c2, ema_c2)
+                    if detach_signal:
+                        key = f"{symbol}_{c2['time']}_DETACH"
                         if key not in last_signal:
-                            if setup_signal == "BEARISH_CROSS":
-                                 msg_body = "📉 MINOR SETUP ALERT (Potential BUY Prep)\n\nCondition: Price Goes Below EMA 5\nInfo: Market shows short-term bearish pressure. Traps early buyers."
+                            if detach_signal == "BEARISH_DETACH":
+                                 # Price < EMA (Bearish Pressure) -> Prep for Buy
+                                 msg_body = "📉 GET READY FOR BUY 🚀\n\nMarket shows short-term bearish pressure.\nTraps early buyers."
                             else:
-                                 msg_body = "📈 MINOR SETUP ALERT (Potential SELL Prep)\n\nCondition: Price Goes Above EMA 5\nInfo: Market shows short-term bullish pressure. Traps early sellers."
+                                 # Price > EMA (Bullish Pressure) -> Prep for Sell
+                                 msg_body = "📈 GET READY FOR SELL 🔻\n\nMarket shows short-term bullish pressure.\nTraps early sellers."
 
                             message = f"""
 {msg_body}
