@@ -49,16 +49,18 @@ def run_bot():
                 if len(df) < 15:
                     continue
 
-                c1 = df.iloc[-3]
-                c2 = df.iloc[-2]
+                # C2 is the LATEST CLOSED candle (iloc[-1])
+                # C1 is the candle BEFORE it (iloc[-2])
+                c1 = df.iloc[-2]
+                c2 = df.iloc[-1]
                 
                 # Extract EMA values for the respective candles
                 ema_c1 = c1["ema5"]
                 ema_c2 = c2["ema5"]
 
                 # Get recent 10 lows and highs BEFORE C1
-                # C1 is at index -3. So we want slice from -13 to -3
-                recent_data = df.iloc[-13:-3]
+                # C1 is at index -2. So we want slice from -12 to -2
+                recent_data = df.iloc[-12:-2]
                 recent_lows = recent_data["low"].tolist()
                 recent_highs = recent_data["high"].tolist()
 
