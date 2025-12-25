@@ -1,51 +1,59 @@
-# EMA 5 Rejection & Confirmation Strategy
+# EMA 5 Liquidity Sweep Confirmation Strategy
 
-## 1. Strategy Overview
-The EMA 5 Rejection & Confirmation Strategy is a price-action–based momentum strategy designed to capture strong directional moves after price clearly rejects the 5-period Exponential Moving Average (EMA).
+**(Signal-Only | Crypto | Delta Exchange India)**
 
-This strategy avoids:
-- EMA hugging
-- Sideways markets
-- Weak candle closes
+## 1. Strategy Name & Philosophy
+**Strategy Name**: EMA 5 Liquidity Sweep Confirmation Strategy
+**Core Idea**: "Pro entry ka secret yahin hai" - combines Liquidity grab (stop-loss hunt), EMA 5 mean re-acceptance, and Strong candle body confirmation. Based on Smart Money Concepts (SMC).
 
 ## 2. Market & Instrument
-- **Market Type**: Cryptocurrency
+- **Market**: Cryptocurrency
 - **Exchange**: Delta Exchange India
-- **Instruments**: Perpetual Futures (e.g., BTCUSD, ETHUSD)
-- **Timeframe**: 15-minute (Primary), 5-minute (Alternative)
+- **Instruments**: Perpetual Futures (BTCUSD, ETHUSD, etc.)
+- **Execution**: Signal-only (Telegram alerts)
+- **Style**: Intraday / Momentum Reversal after Sweep
 
-## 3. Indicator Used
+## 3. Timeframe
+- **Primary**: 15-minute
+- **Advanced**: 5-minute (experienced traders only)
+
+## 4. Indicators Used
 - **Exponential Moving Average (EMA)**
-  - Period: 5
-  - Source: Closing price
+    - Period: 5
+    - Source: Close
+    - Role: Dynamic equilibrium & Confirmation
 
-## 4. Candle Definitions
-- **C1 (Setup Candle)**: Establishes rejection from EMA
-- **C2 (Confirmation Candle)**: Confirms direction with strength
+## 5. Key Concepts
+### 5.1 Liquidity Sweep (Stop-loss Hunt)
+- Price slightly breaks a previous high or low.
+- Triggers stop-losses of retail traders.
+- Immediately shows rejection via wick.
+- **Rule**: If sweep does not happen → NO TRADE.
 
-## 5. Entry Conditions (Core Logic)
+### 5.2 Candle Definitions
+- **C1**: Liquidity Sweep Candle
+- **C2**: Confirmation Candle (EMA acceptance)
+- Signals checked after C2 closes.
 
-### Rule 1: EMA Must NOT Be Touched (C1)
-The setup candle (C1) must not touch EMA 5.
-- EMA 5 should be completely outside the candle range.
-- EMA 5 is neither between C1 high nor C1 low.
+## 6. BUY SETUP (Long)
+**Conditions:**
+1.  **Price Below EMA 5**: Market shows short-term bearish pressure.
+2.  **Previous Low Swept**: Price breaks previous swing low slightly (Condition: C1 Low < Previous Swing Low).
+3.  **Strong Rejection Wick**: Long lower wick on C1.
+4.  **EMA Acceptance**: C2 closes above EMA 5.
+5.  **Strong Body Close**: ≥ 30% of C2 body is above EMA 5.
 
-### Rule 2: Directional Confirmation (C2)
-The immediate next candle (C2) must close on the opposite side of EMA 5 relative to C1.
-- **Bullish Case**: C1 closes below EMA 5, C2 closes above EMA 5.
-- **Bearish Case**: C1 closes above EMA 5, C2 closes below EMA 5.
+## 7. SELL SETUP (Short)
+**Conditions:**
+1.  **Price Above EMA 5**: Market shows short-term bullish pressure.
+2.  **Previous High Swept**: Price breaks previous swing high slightly (Condition: C1 High > Previous Swing High).
+3.  **Strong Rejection Wick**: Long upper wick on C1.
+4.  **EMA Acceptance**: C2 closes below EMA 5.
+5.  **Strong Body Close**: ≥ 30% of C2 body is below EMA 5.
 
-### Rule 3: Minimum 30% Candle Body Strength (C2)
-At least 30% of C2’s real body must be beyond EMA 5 in the signal direction.
+## 8. Trade Avoidance Rule
+**IF NO LIQUIDITY SWEEP → NO TRADE**
 
-## 6. Buy Signal Conditions
-- C1 does not touch EMA 5
-- C1 closes below EMA 5
-- C2 closes above EMA 5
-- ≥ 30% of C2 body is above EMA 5
-
-## 7. Sell Signal Conditions
-- C1 does not touch EMA 5
-- C1 closes above EMA 5
-- C2 closes below EMA 5
-- ≥ 30% of C2 body is below EMA 5
+## 9. Risk Management
+- **Stop Loss**: Low of sweep candle (BUY) / High of sweep candle (SELL)
+- **Target**: Minimum 1:1, Ideal 1:2
