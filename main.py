@@ -1,10 +1,19 @@
 import time
 from datetime import datetime
+import threading
+from flask import Flask
 from config import *
 from delta_api import fetch_candles
 from indicators import ema
 from strategy import check_liquidity_sweep_signal
 from notifier import send_alert
+
+# Flask Web Server for Render
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Delta EMA Bot is Running!"
 
 last_signal = {}
 
@@ -22,44 +31,44 @@ def get_sleep_time():
     sleep_sec = (sleep_min * 60) - seconds + 5 # 5 seconds buffer
     return sleep_sec
 
-while True:
-    try:
-        sleep_seconds = get_sleep_time()
-        print(f"Sleeping for {sleep_seconds} seconds until next candle close...")
-        time.sleep(sleep_seconds)
+def run_bot():
+    print("Bot started...")
+    while True:
+        try:
+            sleep_seconds = get_sleep_time()
+            print(f"Sleeping for {sleep_seconds} seconds until next candle close...")
+            time.sleep(sleep_seconds)
 
-        for symbol in SYMBOLS:
-            df = fetch_candles(symbol, TIMEFRAME)
+            for symbol in SYMBOLS:
+                df = fetch_candles(symbol, TIMEFRAME)
 
-            df["ema5"] = ema(df["close"], EMA_PERIOD)
+                df["ema5"] = ema(df["close"], EMA_PERIOD)
 
-            # Need at least a few candles for history
-            if len(df) < 15:
-                continue
+                # Need at least a few candles for history
+                if len(df) < 15:
+                    continue
 
-            c1 = df.iloc[-3]
-            c2 = df.iloc[-2]
-            
-            # Extract EMA values for the respective candles
-            ema_c1 = c1["ema5"]
-            ema_c2 = c2["ema5"]
+                c1 = df.iloc[-3]
+                c2 = df.iloc[-2]
+                
+                # Extract EMA values for the respective candles
+                ema_c1 = c1["ema5"]
+                ema_c2 = c2["ema5"]
 
-            # Get recent 10 lows and highs BEFORE C1
-            # C1 is at index -3. So we want slice from -13 to -3
-            recent_data = df.iloc[-13:-3]
-            recent_lows = recent_data["low"].tolist()
-            recent_highs = recent_data["high"].tolist()
+                # Get recent 10 lows and highs BEFORE C1
+                # C1 is at index -3. So we want slice from -13 to -3
+                recent_data = df.iloc[-13:-3]
+                recent_lows = recent_data["low"].tolist()
+                recent_highs = recent_data["high"].tolist()
 
-            print(f"{symbol} | C2: {c2['time']} C={c2['close']} EMA={round(ema_c2, 2)} | C1: {c1['time']} C={c1['close']} EMA={round(ema_c1, 2)}")
-            # Optional debug for sweep
-            # print(f"Recent Lows: {recent_lows} | Min: {min(recent_lows) if recent_lows else 'N/A'}")
+                print(f"{symbol} | C2: {c2['time']} C={c2['close']} EMA={round(ema_c2, 2)} | C1: {c1['time']} C={c1['close']} EMA={round(ema_c1, 2)}")
+                
+                signal = check_liquidity_sweep_signal(c1, c2, ema_c1, ema_c2, recent_lows, recent_highs)
 
-            signal = check_liquidity_sweep_signal(c1, c2, ema_c1, ema_c2, recent_lows, recent_highs)
-
-            if signal:
-                key = f"{symbol}_{c2['time']}"
-                if key not in last_signal:
-                    message = f"""
+                if signal:
+                    key = f"{symbol}_{c2['time']}"
+                    if key not in last_signal:
+                        message = f"""
 🚨 LIQUIDITY SWEEP SIGNAL
 
 Symbol: {symbol}
@@ -69,9 +78,20 @@ Close: {c2['close']}
 EMA5: {round(ema_c2, 2)}
 Time: {c2['time']}
 """
-                    send_alert(message)
-                    last_signal[key] = True
+                        send_alert(message)
+                        last_signal[key] = True
 
-    except Exception as e:
-        print("Error:", e)
-        time.sleep(30)
+        except Exception as e:
+            print("Error:", e)
+            time.sleep(30)
+
+if __name__ == "__main__":
+    # Start the bot in a background thread
+    t = threading.Thread(target=run_bot)
+    t.daemon = True
+    t.start()
+    
+    # Start the Flask web server
+    # Render assigns specific port via os.environ.get("PORT")
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)

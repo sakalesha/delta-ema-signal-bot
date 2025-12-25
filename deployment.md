@@ -1,45 +1,47 @@
-# Deploying to Render.com
+# Deploying to Render.com (Free Tier)
 
-Since your bot runs continuously (`while True` loop), the appropriate Render service is a **Background Worker**.
+To run this bot for **FREE** on Render, we use a **Web Service** instead of a Background Worker. We have added a small web server (`Flask`) to the bot so it satisfies Render's requirements.
 
 ## Prerequisites
-1. **GitHub Account**: You need to push this code to a GitHub repository.
-2. **Render Account**: Sign up at [render.com](https://render.com).
+1. **GitHub Account**: Push your code to a repository.
+2. **Render Account**: [render.com](https://render.com).
+3. **UptimeRobot Account** (Free): [uptimerobot.com](https://uptimerobot.com) (Required to keep the bot awake).
 
 ## Step 1: Push Code to GitHub
-I have already initialized a local git repository for you. You now need to push it to a new GitHub repo.
-
-1. Create a **New Repository** on GitHub (name it `delta-ema-signal-bot`).
-2. Run the following commands in your terminal (replace `<YOUR_USERNAME>` with your GitHub username):
+Ensure you have pushed the latest changes (including `requirements.txt` and `main.py`) to your GitHub repository.
 
 ```bash
-git branch -M main
-git remote add origin https://github.com/<YOUR_USERNAME>/delta-ema-signal-bot.git
-git push -u origin main
+git add .
+git commit -m "Add web server for Render Free Tier"
+git push
 ```
 
-## Step 2: Create Background Worker on Render
+## Step 2: Create Web Service on Render
 1. Go to your Render Dashboard.
-2. Click **New +** and select **Background Worker**.
-3. Connect your GitHub account and select the `delta-ema-signal-bot` repository.
+2. Click **New +** and select **Web Service**.
+3. Connect your `delta-ema-signal-bot` repository.
 4. Configure the service:
    - **Name**: `delta-ema-bot`
    - **Runtime**: `Python 3`
    - **Build Command**: `pip install -r requirements.txt`
    - **Start Command**: `python main.py`
-5. Click **Create Background Worker**.
+   - **Plan**: Select **Free**.
+5. Click **Create Web Service**.
 
-## Step 3: Configure Environment Variables (Crucial)
-Your bot needs API keys to work. Do **NOT** commit them to code in a real production scenario, but for now they are hardcoded.
-* Ideally, update `notifier.py` to use `os.getenv` again and set these in Render:
-    - `BOT_TOKEN`
-    - `CHAT_ID`
+## Step 3: Configure Environment Variables
+In the Render dashboard for your service, go to **Environment**:
+1. Add `TELEGRAM_BOT_TOKEN`: Your new bot token.
+2. Add `TELEGRAM_CHAT_ID`: Your chat ID.
 
-## Note on Costs
-Background Workers on Render are part of paid plans (starting ~$7/month).
-If you want a **Free Tier** option, you must use a **Web Service**, but Render freezes free web services that don't receive HTTP traffic or bind to a port.
-To make this work on Free Tier:
-1. We need to add a small HTTP server (like Flask) to `main.py` to satisfy Render's port requirement.
-2. You would need to use a service like **UptimeRobot** to ping your bot url every 5 minutes to keep it awake.
+## Step 4: Keep It Awake (Crucial)
+Render's Free Tier spins down services after 15 minutes of inactivity. To prevent this:
+1. Copy your Render Service URL (e.g., `https://delta-ema-bot.onrender.com`).
+2. Go to **UptimeRobot**.
+3. Click **Add New Monitor**.
+   - **Monitor Type**: HTTP(s)
+   - **Friendly Name**: Delta Bot
+   - **URL/IP**: Paste your Render URL.
+   - **Monitoring Interval**: **5 minutes** (Important!).
+4. Click **Create Monitor**.
 
-**Currently, the code is ready for the standard (Paid) Background Worker.**
+**Done!** UptimeRobot will ping your bot every 5 minutes, keeping it active 24/7 for free.
