@@ -83,30 +83,6 @@ Time: {c2['time']}
 """
                         send_alert(message)
                         last_signal[key] = True
-                else:
-                    # Check for Detached Candle (No Touch) Alert
-                    detach_signal = check_ema_detach(c2, ema_c2)
-                    if detach_signal:
-                        key = f"{symbol}_{c2['time']}_DETACH"
-                        if key not in last_signal:
-                            if detach_signal == "BEARISH_DETACH":
-                                 # Price < EMA (Bearish Pressure) -> Prep for Buy
-                                 msg_body = "📉 GET READY FOR BUY 🚀\n\nMarket shows short-term bearish pressure.\nTraps early buyers."
-                            else:
-                                 # Price > EMA (Bullish Pressure) -> Prep for Sell
-                                 msg_body = "📈 GET READY FOR SELL 🔻\n\nMarket shows short-term bullish pressure.\nTraps early sellers."
-
-                            message = f"""
-{msg_body}
-
-Symbol: {symbol}
-Timeframe: {TIMEFRAME}
-Close: {c2['close']}
-EMA5: {round(ema_c2, 2)}
-Time: {c2['time']}
-"""
-                            send_alert(message)
-                            last_signal[key] = True
 
         except Exception as e:
             print("Error:", e)
